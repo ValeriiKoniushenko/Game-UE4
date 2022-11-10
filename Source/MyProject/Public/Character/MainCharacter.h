@@ -16,7 +16,7 @@ class MYPROJECT_API AMainCharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
-	AMainCharacter();
+	AMainCharacter(const FObjectInitializer& ObjectInitializer);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Camera Components")
 	UCameraComponent* CameraComponent;

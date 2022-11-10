@@ -15,7 +15,7 @@ public class MyProject : ModuleRules
 		PublicIncludePaths.AddRange(new[]
 		{
 			"MyProject/Public/Character",
-			"MyProject/Public/Game",
+			"MyProject/Public/Core",
 			"MyProject/Public/HUD"
 		});
 		
