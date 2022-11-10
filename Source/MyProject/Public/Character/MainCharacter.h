@@ -23,7 +23,12 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera Components")
 	USpringArmComponent* SpringArmComponent;
+
+	UFUNCTION(BlueprintCallable)
+	bool IsWantToRun() const;
 	
+	UFUNCTION(BlueprintCallable)
+	bool IsWantToSlowWalk() const;
 protected:
 	virtual void BeginPlay() override;
 
@@ -33,4 +38,10 @@ private:
 
 	void MoveForward(float Offset);
 	void MoveRight(float Offset);
+	void RequestSlowWalk(float);
+	void RequestRun(float);
+
+private:
+	bool bIsWantToRun = false;
+	bool bIsWantToSlowWalk = false;
 };

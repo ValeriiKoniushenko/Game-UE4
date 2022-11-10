@@ -29,6 +29,16 @@ AMainCharacter::AMainCharacter(const FObjectInitializer& ObjectInitializer) :
 	CameraComponent->AttachToComponent(SpringArmComponent, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("SpringArmComponent"));
 }
 
+bool AMainCharacter::IsWantToRun() const
+{
+	return bIsWantToRun;
+}
+
+bool AMainCharacter::IsWantToSlowWalk() const
+{
+	return bIsWantToSlowWalk;
+}
+
 void AMainCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -37,6 +47,7 @@ void AMainCharacter::BeginPlay()
 void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
 }
 
 void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -50,14 +61,35 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 	PlayerInputComponent->BindAxis("TurnAround", this, &AMainCharacter::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &AMainCharacter::AddControllerPitchInput);
+
+	PlayerInputComponent->BindAxis("SlowWalking", this, &AMainCharacter::RequestSlowWalk);
+	PlayerInputComponent->BindAxis("Run", this, &AMainCharacter::RequestRun);
 }
 
-void AMainCharacter::MoveForward(float Offset)
+void AMainCharacter::MoveForward(float Value)
 {
-	AddMovementInput(GetActorForwardVector(), Offset);
+	AddMovementInput(GetActorForwardVector(), Value);
 }
 
-void AMainCharacter::MoveRight(float Offset)
+void AMainCharacter::MoveRight(float Value)
 {
-	AddMovementInput(GetActorRightVector(), Offset);
+	AddMovementInput(GetActorRightVector(), Value);
+}
+
+void AMainCharacter::RequestSlowWalk(float Value)
+{
+	bIsWantToSlowWalk = !FMath::IsNearlyZero(Value);
+	
+	auto* MovementComponent = Cast<UMainCharacterMovementComponent>(GetMovementComponent());
+	if (!bIsWantToRun)
+		MovementComponent->SetWalkingMode(bIsWantToSlowWalk ? EWalkingMode::SlowWalk : EWalkingMode::Walk);
+}
+
+void AMainCharacter::RequestRun(float Value)
+{
+	bIsWantToRun = !FMath::IsNearlyZero(Value);
+
+	auto* MovementComponent = Cast<UMainCharacterMovementComponent>(GetMovementComponent());
+	if (!bIsWantToSlowWalk)
+		MovementComponent->SetWalkingMode(bIsWantToRun ? EWalkingMode::Run : EWalkingMode::Walk);
 }

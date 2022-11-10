@@ -6,6 +6,14 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "MainCharacterMovementComponent.generated.h"
 
+UENUM()
+enum class EWalkingMode : uint8
+{
+	SlowWalk,
+	Walk,
+	Run
+};
+
 /**
  * 
  */
@@ -14,6 +22,19 @@ class MYPROJECT_API UMainCharacterMovementComponent : public UCharacterMovementC
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(ClampMin="0", UIMin="0", ClampMax="100", UIMax="100"))
-	float RunSpeedMultiplier = 1.5f;
+	UPROPERTY(Category="Character Movement: Slow Walking", EditAnywhere, BlueprintReadWrite, meta=(ClampMin="0", UIMin="0"))
+	float MaxSlowWalkSpeed = 300.f;
+	
+	UPROPERTY(Category="Character Movement: Running", EditAnywhere, BlueprintReadWrite, meta=(ClampMin="0", UIMin="0"))
+	float MaxRunSpeed = 1200.f;
+
+	UFUNCTION(BlueprintCallable)
+	void SetWalkingMode(EWalkingMode Mode);
+
+	UFUNCTION(BlueprintCallable)
+	EWalkingMode GetWalkingMode() const;
+
+private:
+	EWalkingMode WalkingMode = EWalkingMode::Walk;
+	float LastMaxWalkSpeed = MaxWalkSpeed;
 };
