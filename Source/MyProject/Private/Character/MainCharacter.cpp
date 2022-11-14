@@ -8,6 +8,8 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Components/MainCharacterMovementComponent.h"
 
+DEFINE_LOG_CATEGORY_STATIC(LogMainCharacter, All, All);
+
 AMainCharacter::AMainCharacter(const FObjectInitializer& ObjectInitializer) :
 	Super(ObjectInitializer.SetDefaultSubobjectClass<UMainCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
 {
@@ -23,6 +25,12 @@ AMainCharacter::AMainCharacter(const FObjectInitializer& ObjectInitializer) :
 	SpringArmComponent->TargetArmLength = 500.f;
 	SpringArmComponent->SetupAttachment(RootComponent);
 	SpringArmComponent->bUsePawnControlRotation = true;
+
+	UMainCharacterMovementComponent* MovementComponent = GetCustomMovementComponent();
+	check(MovementComponent);
+	MovementComponent->TopJogSpeed = 400.f;
+	MovementComponent->TopWalkSpeed = 150.f;
+	MovementComponent->TopRunSpeed = 800.f;
 	
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
 	check(CameraComponent);
@@ -31,12 +39,38 @@ AMainCharacter::AMainCharacter(const FObjectInitializer& ObjectInitializer) :
 
 bool AMainCharacter::IsWantToRun() const
 {
-	return bIsWantToRun;
+	return bIsWantToRun && !bIsWantToWalk && bIsWantToJog;
 }
 
-bool AMainCharacter::IsWantToSlowWalk() const
+bool AMainCharacter::IsWantToJog() const
 {
-	return bIsWantToSlowWalk;
+	return !bIsWantToRun && !bIsWantToWalk && bIsWantToJog;
+}
+
+bool AMainCharacter::IsWantToWalk() const
+{
+	return !bIsWantToRun && bIsWantToWalk && bIsWantToJog;
+}
+
+bool AMainCharacter::IsIdle() const
+{
+	return FMath::IsNearlyZero(GetVelocity().Size());
+}
+
+bool AMainCharacter::IsWantToIdle() const
+{
+	return !bIsWantToJog && !bIsWantToWalk && !bIsWantToRun;
+}
+
+bool AMainCharacter::IsWantToStop() const
+{
+	static float LastSpeed = 0;
+	
+	const bool Result = IsWantToIdle() && (GetVelocity().Size() < LastSpeed);
+
+	LastSpeed = GetVelocity().Size();
+	
+	return Result;
 }
 
 void AMainCharacter::BeginPlay()
@@ -47,7 +81,6 @@ void AMainCharacter::BeginPlay()
 void AMainCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -62,12 +95,13 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAxis("TurnAround", this, &AMainCharacter::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp", this, &AMainCharacter::AddControllerPitchInput);
 
-	PlayerInputComponent->BindAxis("SlowWalking", this, &AMainCharacter::RequestSlowWalk);
+	PlayerInputComponent->BindAxis("SlowWalking", this, &AMainCharacter::RequestWalk);
 	PlayerInputComponent->BindAxis("Run", this, &AMainCharacter::RequestRun);
 }
 
 void AMainCharacter::MoveForward(float Value)
 {
+	bIsWantToJog = Value > 0.f;
 	AddMovementInput(GetActorForwardVector(), Value);
 }
 
@@ -76,20 +110,37 @@ void AMainCharacter::MoveRight(float Value)
 	AddMovementInput(GetActorRightVector(), Value);
 }
 
-void AMainCharacter::RequestSlowWalk(float Value)
+void AMainCharacter::RequestWalk(float Value)
 {
-	bIsWantToSlowWalk = !FMath::IsNearlyZero(Value);
+	bIsWantToWalk = !FMath::IsNearlyZero(Value);
 	
-	auto* MovementComponent = Cast<UMainCharacterMovementComponent>(GetMovementComponent());
-	if (!bIsWantToRun)
-		MovementComponent->SetWalkingMode(bIsWantToSlowWalk ? EWalkingMode::SlowWalk : EWalkingMode::Walk);
+	if (auto* MovementComponent = GetCustomMovementComponent())
+	{
+		if (!bIsWantToRun)
+		{
+			MovementComponent->SetWalkingMode(IsWantToWalk() ? EWalkingMode::Walk : EWalkingMode::Jog);
+		}
+	}
 }
 
 void AMainCharacter::RequestRun(float Value)
 {
 	bIsWantToRun = !FMath::IsNearlyZero(Value);
 
+	if (auto* MovementComponent = GetCustomMovementComponent())
+	{
+		if (!bIsWantToWalk)
+		{
+			MovementComponent->SetWalkingMode(IsWantToRun() ? EWalkingMode::Run : EWalkingMode::Jog);
+		}
+	}
+}
+
+UMainCharacterMovementComponent* AMainCharacter::GetCustomMovementComponent() const
+{
 	auto* MovementComponent = Cast<UMainCharacterMovementComponent>(GetMovementComponent());
-	if (!bIsWantToSlowWalk)
-		MovementComponent->SetWalkingMode(bIsWantToRun ? EWalkingMode::Run : EWalkingMode::Walk);
+	if (!MovementComponent)
+		UE_LOG(LogMainCharacter, Error, TEXT("Impossible to get Main Character Movement Component"));
+
+	return MovementComponent;
 }

@@ -7,16 +7,13 @@ DEFINE_LOG_CATEGORY_STATIC(LogMovemementComponent, All, All);
 
 void UMainCharacterMovementComponent::SetWalkingMode(EWalkingMode Mode)
 {
-	if (WalkingMode == EWalkingMode::Walk)
-		LastMaxWalkSpeed = MaxWalkSpeed;
-	
 	WalkingMode = Mode;
-	if (WalkingMode == EWalkingMode::SlowWalk)
-		MaxWalkSpeed = MaxSlowWalkSpeed;
-	else if (WalkingMode == EWalkingMode::Walk)
-		MaxWalkSpeed = LastMaxWalkSpeed;
+	if (WalkingMode == EWalkingMode::Walk)
+		MaxWalkSpeed = TopWalkSpeed;
+	else if (WalkingMode == EWalkingMode::Jog)
+		MaxWalkSpeed = TopJogSpeed;
 	else if (WalkingMode == EWalkingMode::Run)
-		MaxWalkSpeed = MaxRunSpeed;
+		MaxWalkSpeed = TopRunSpeed;
 	else
 		UE_LOG(LogMovemementComponent, Error, TEXT("Invalid walking mode"));
 }

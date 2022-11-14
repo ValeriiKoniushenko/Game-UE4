@@ -9,8 +9,8 @@
 UENUM()
 enum class EWalkingMode : uint8
 {
-	SlowWalk,
 	Walk,
+	Jog,
 	Run
 };
 
@@ -22,11 +22,14 @@ class MYPROJECT_API UMainCharacterMovementComponent : public UCharacterMovementC
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(Category="Character Movement: Slow Walking", EditAnywhere, BlueprintReadWrite, meta=(ClampMin="0", UIMin="0"))
-	float MaxSlowWalkSpeed = 300.f;
+	UPROPERTY(Category="Character Movement: Walking", EditAnywhere, BlueprintReadWrite, meta=(ClampMin="0", UIMin="0"))
+	float TopWalkSpeed = 300.f;
+	
+	UPROPERTY(Category="Character Movement: Walking", EditAnywhere, BlueprintReadWrite, meta=(ClampMin="0", UIMin="0"))
+	float TopJogSpeed = 600.f;
 	
 	UPROPERTY(Category="Character Movement: Running", EditAnywhere, BlueprintReadWrite, meta=(ClampMin="0", UIMin="0"))
-	float MaxRunSpeed = 1200.f;
+	float TopRunSpeed = 1200.f;
 
 	UFUNCTION(BlueprintCallable)
 	void SetWalkingMode(EWalkingMode Mode);
@@ -36,5 +39,4 @@ public:
 
 private:
 	EWalkingMode WalkingMode = EWalkingMode::Walk;
-	float LastMaxWalkSpeed = MaxWalkSpeed;
 };

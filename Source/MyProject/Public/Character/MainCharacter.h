@@ -8,6 +8,7 @@
 
 class UCameraComponent;
 class UMainMovementComponent;
+class UMainCharacterMovementComponent;
 class USpringArmComponent;
 
 UCLASS()
@@ -26,9 +27,22 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	bool IsWantToRun() const;
+
+	UFUNCTION(BlueprintCallable)
+	bool IsWantToJog() const;
 	
 	UFUNCTION(BlueprintCallable)
-	bool IsWantToSlowWalk() const;
+	bool IsWantToWalk() const;
+	
+	UFUNCTION(BlueprintCallable)
+	bool IsIdle() const;
+	
+	UFUNCTION(BlueprintCallable)
+	bool IsWantToIdle() const;
+	
+	UFUNCTION(BlueprintCallable)
+	bool IsWantToStop() const;
+	
 protected:
 	virtual void BeginPlay() override;
 
@@ -38,10 +52,12 @@ private:
 
 	void MoveForward(float Offset);
 	void MoveRight(float Offset);
-	void RequestSlowWalk(float);
+	void RequestWalk(float);
 	void RequestRun(float);
+	UMainCharacterMovementComponent* GetCustomMovementComponent() const;
 
 private:
 	bool bIsWantToRun = false;
-	bool bIsWantToSlowWalk = false;
+	bool bIsWantToJog = false;
+	bool bIsWantToWalk = false;
 };
