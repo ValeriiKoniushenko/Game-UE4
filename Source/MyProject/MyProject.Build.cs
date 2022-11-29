@@ -15,8 +15,11 @@ public class MyProject : ModuleRules
 		PublicIncludePaths.AddRange(new[]
 		{
 			"MyProject/Public/Character",
+			"MyProject/Public/Character/Components",
+			"MyProject/Public/Character/Abilities",
+			"MyProject/Public/Character/Attributes",
 			"MyProject/Public/Core",
-			"MyProject/Public/HUD"
+			"MyProject/Public/HUD",
 		});
 		
 		// To enable full range of GAS capabilities

@@ -2,29 +2,46 @@
 
 #pragma once
 
+#include "AbilitySystemInterface.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "MainAttributeSet.h"
 #include "MainCharacter.generated.h"
 
+class UAbilitySystemComponent;
 class UCameraComponent;
-class UMainMovementComponent;
+class UMainAttributeSet;
 class UMainCharacterMovementComponent;
+class UMainMovementComponent;
 class USpringArmComponent;
+class UAnimMontage;
 
 UCLASS()
-class MYPROJECT_API AMainCharacter : public ACharacter
+class MYPROJECT_API AMainCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
 public:
 	AMainCharacter(const FObjectInitializer& ObjectInitializer);
+	virtual ~AMainCharacter() override;
 
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GAS")
+	UMainAttributeSet* MainAttributeSet;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Camera Components")
 	UCameraComponent* CameraComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera Components")
 	USpringArmComponent* SpringArmComponent;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GAS")
+	TSubclassOf<UGameplayAbility> CrouchAbility;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GAS")
+	UAnimMontage* CrouchAnimMontage;
+	
 	UFUNCTION(BlueprintCallable)
 	bool IsWantToRun() const;
 
@@ -43,8 +60,18 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool IsWantToStop() const;
 	
+	UFUNCTION(BlueprintCallable)
+	void AbilityToAcquire();
+
+	virtual void PossessedBy(AController* NewController) override;
+
+	virtual void UnPossessed() override;
+
 protected:
 	virtual void BeginPlay() override;
+	
+	UPROPERTY()
+	UAbilitySystemComponent* AbilitySystemComponent;
 
 private:
 	virtual void Tick(float DeltaTime) override;
@@ -52,6 +79,7 @@ private:
 
 	void MoveForward(float Offset);
 	void MoveRight(float Offset);
+	void MoveCrouch();
 	void RequestWalk(float);
 	void RequestRun(float);
 	UMainCharacterMovementComponent* GetCustomMovementComponent() const;
